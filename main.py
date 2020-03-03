@@ -15,8 +15,8 @@ def main():
     specialities = ['research engineer', 'manager', 'programmer', 'surgeon']
     addresses = ['module_1', 'section_8', 'module_3', 'section_1']
     emails = ['scott_chief@mars.org', 'bar_stin@space.com', 'ted_best@sun.ru', 'candy_marsh@ship.co']
+    session = db_session.create_session()
     for i in range(4):
-        session = db_session.create_session()
         user = User()
         user.surname = surnames[i]
         user.name = names[i]
@@ -26,7 +26,7 @@ def main():
         user.address = addresses[i]
         user.email = emails[i]
         session.add(user)
-        session.commit()
+    session.commit()
     app.run()
 
 
