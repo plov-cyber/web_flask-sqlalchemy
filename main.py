@@ -1,7 +1,8 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, redirect
 from data import db_session
 from data.users import User
 from data.jobs import Jobs
+from regform import RegisterForm
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
@@ -9,8 +10,6 @@ app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 
 def main():
     db_session.global_init("db/blogs.sqlite")
-    add_users()
-    add_jobs()
     app.run()
 
 
@@ -70,6 +69,32 @@ def job_journal():
         'users': users
     }
     return render_template('job_journal.html', **d)
+
+
+@app.route('/register', methods=["GET", "POST"])
+def reg_form():
+    form = RegisterForm()
+    if form.validate_on_submit():
+        if form.password.data != form.password_again.data:
+            return render_template('reg_form.html', title='Регистрация', form=form,
+                                   message='Passwords are different')
+        session = db_session.create_session()
+        if session.query(User).filter(User.login == form.login.data).first():
+            return render_template('reg_form.html', title='Регистрация', form=form, message='User is already exists!')
+        user = User(
+            login=form.login.data,
+            surname=form.surname.data,
+            name=form.name.data,
+            age=form.age.data,
+            position=form.position.data,
+            speciality=form.speciality.data,
+            address=form.address.data
+        )
+        user.set_password(form.password.data)
+        session.add(user)
+        session.commit()
+        return 'Регистрация прошла успешно!'
+    return render_template('reg_form.html', title='Регистрация', form=form)
 
 
 if __name__ == '__main__':

@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block style %}
+<link rel="stylesheet" href="/static/css/style.css" type="text/css">
+{% endblock %}
+
+{% block content %}
+<form id="form" method="post" novalidate>
+    {{ form.hidden_tag() }}
+    {{ form.csrf_token }}
+    <h1>Register form</h1>
+    <div>
+        {{ form.login.label }} <br>
+        {{ form.login(class="form-control") }}<br>
+        {% for error in form.login.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
+    </div>
+    <div>
+        {{ form.password.label }} <br>
+        {{ form.password(class="form-control", type="password") }}<br>
+        {% for error in form.password.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
+    </div>
+    <div>
+        {{ form.password_again.label }} <br>
+        {{ form.password_again(class="form-control", type="password") }}<br>
+        {% for error in form.password_again.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
+    </div>
+    <div>
+        {{ form.surname.label }} <br>
+        {{ form.surname(class="form-control") }}<br>
+        {% for error in form.surname.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
+    </div>
+    <div>
+        {{ form.name.label }} <br>
+        {{ form.name(class="form-control") }}<br>
+        {% for error in form.name.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
+    </div>
+    <div>
+        {{ form.age.label }} <br>
+        {{ form.age(class="form-control") }}<br>
+        {% for error in form.age.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
+    </div>
+    <div>
+        {{ form.position.label }} <br>
+        {{ form.position(class="form-control") }}<br>
+        {% for error in form.position.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
+    </div>
+    <div>
+        {{ form.speciality.label }} <br>
+        {{ form.speciality(class="form-control") }}<br>
+        {% for error in form.speciality.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
+    </div>
+    <div>
+        {{ form.address.label }} <br>
+        {{ form.address(class="form-control") }}<br>
+        {% for error in form.address.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
+    </div>
+    <div>{{ form.submit(class="btn btn-primary", type="submit") }}</div>
+    {% if message %}
+    <div class="alert alert-danger">{{ message }}</div>
+    {% endif %}
+</form>
+{% endblock %}
