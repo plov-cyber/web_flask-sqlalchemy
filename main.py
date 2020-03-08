@@ -124,6 +124,7 @@ def login():
 
 
 @app.route('/addjob', methods=['POST', 'GET'])
+@login_required
 def add_job():
     form = AddJobForm()
     if form.validate_on_submit():
@@ -135,6 +136,8 @@ def add_job():
             is_finished=form.is_finished.data,
             collaborators=form.collaborators.data
         )
+        current_user.job = job
+        session.merge(current_user)
         session.add(job)
         session.commit()
         return redirect('/')
