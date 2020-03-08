@@ -12,4 +12,3 @@ class Department(SqlAlchemyBase):
     members = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     email = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     user = orm.relation('User')
-    job = orm.relation('Jobs')

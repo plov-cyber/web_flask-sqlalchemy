@@ -8,8 +8,27 @@
     <title>{{title}}</title>
 </head>
 <body>
-    <div class="alert alert-secondary" role="alert"><h1>Миссия Колонизация Марса</h1></div>
-    <div class="alert alert-light"><h3>И на Марсе будут яблони цвести!</h3></div>
-    {% block content %}{% endblock %}
+<nav class="navbar navbar-light bg-light">
+    <a class="navbar-brand" href="#"><h1>Миссия колонизация Марса</h1></a>
+
+    <div style="float: right;">
+        <ul class="nav navbar-nav">
+            {% if current_user.is_authenticated %}
+            <li class="nav-item">
+                <a class="nav-link" href="/logout">{{ current_user.name }}</a>
+            </li>
+            {% else %}
+            <li class="nav-item">
+                <a class="nav-link" href="/register">Зарегистрироваться</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/login">Войти</a>
+            </li>
+            {% endif %}
+        </ul>
+    </div>
+</nav>
+<div class="alert alert-light"><h3>И на Марсе будут яблони цвести!</h3></div>
+{% block content %}{% endblock %}
 </body>
 </html>
