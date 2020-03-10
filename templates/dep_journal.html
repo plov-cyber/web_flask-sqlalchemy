@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block style %}
+<link rel="stylesheet" href="static/css/style.css">
+{% endblock %}
+
+{% block content %}
+<h2 style="text-align: center">List of Departments</h2>
+<div style="margin: auto; width: 900px;">
+    <a href="/" class="btn btn-secondary">Back to Jobs</a>
+    {% if current_user.is_authenticated %}
+    <a href="/adddep" class="btn btn-secondary">Add a department</a>
+    {% endif %}
+</div>
+{% for dep in deps %}
+<div style="width: 900px; margin: auto;">
+    <h3>Department # {{loop.index}}</h3>
+    <table class="table table-bordered" style="width: 900px; margin: auto;">
+        <thead>
+        <tr class="table-active">
+            <th scope="col">Title of department</th>
+            <th scope="col">Chief</th>
+            <th scope="col">Members</th>
+            <th scope="col">Department Email</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td class="table-primary">{{dep.title}}</td>
+            <td class="table-primary">{{dep.user.surname}} {{dep.user.name}}</td>
+            <td class="table-primary" align="center">{{dep.members}}</td>
+            <td class="table-primary" align="center">{{dep.email}}</td>
+        </tr>
+        </tbody>
+    </table>
+    <br>
+    {% if current_user.is_authenticated and (current_user == dep.user or current_user.id == 1) %}
+    <div>
+        <a href="/deps/{{ dep.id }}" class="btn btn-warning">Edit</a>
+        <a href="/deps_delete/{{ dep.id }}" class="btn btn-danger">Delete</a>
+    </div>
+    {% endif %}
+</div>
+<br>
+{% endfor %}
+{% endblock %}

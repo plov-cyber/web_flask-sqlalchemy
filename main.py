@@ -4,6 +4,8 @@ from werkzeug.exceptions import abort
 from data import db_session
 from data.users import User
 from data.jobs import Jobs
+from data.departments import Department
+from depform import DepForm
 from regform import RegisterForm
 from loginform import LoginForm
 from jobform import JobForm
@@ -25,49 +27,6 @@ def main():
     app.run()
 
 
-def add_users():
-    session = db_session.create_session()
-    surnames = ['Scott', 'Stinson', 'Mosby', 'Kandy']
-    names = ['Ridley', 'Barni', 'Ted', 'Marshall']
-    ages = [21, 22, 25, 23]
-    positions = ['captain', 'general', 'engineer', 'doctor']
-    specialities = ['research engineer', 'manager', 'programmer', 'surgeon']
-    addresses = ['module_1', 'section_8', 'module_3', 'section_1']
-    emails = ['scott_chief@mars.org', 'bar_stin@space.com', 'ted_best@sun.ru', 'candy_marsh@ship.co']
-    for i in range(4):
-        user = User()
-        user.surname = surnames[i]
-        user.name = names[i]
-        user.age = ages[i]
-        user.position = positions[i]
-        user.speciality = specialities[i]
-        user.address = addresses[i]
-        user.email = emails[i]
-        session.add(user)
-    session.commit()
-
-
-def add_jobs():
-    session = db_session.create_session()
-    team_leaders = [1, 2, 3, 4]
-    jobs = ['Deployment of residental modules 1 and 2',
-            'Exploration of mineral resources',
-            'Development of a management system',
-            'Building of module 3']
-    work_sizes = [15, 25, 20, 100]
-    collaborators = ['2, 3', '4, 3', '5', '1, 2, 3, 5']
-    are_finished = [False, False, True, False]
-    for i in range(4):
-        job = Jobs()
-        job.team_leader = team_leaders[i]
-        job.job = jobs[i]
-        job.work_size = work_sizes[i]
-        job.collaborators = collaborators[i]
-        job.is_finished = are_finished[i]
-        session.add(job)
-    session.commit()
-
-
 @app.route('/')
 def job_journal():
     session = db_session.create_session()
@@ -76,11 +35,21 @@ def job_journal():
     for i in range(len(jobs)):
         users.append(session.query(User).filter(User.id == jobs[i].team_leader).first())
     d = {
-        'title': 'Журнал работ',
-        'jobs': jobs,
-        'users': users
+        'title': 'Works log',
+        'jobs': jobs
     }
     return render_template('job_journal.html', **d)
+
+
+@app.route('/departments')
+def department_journal():
+    session = db_session.create_session()
+    deps = session.query(Department).all()
+    d = {
+        'title': 'List of Departments',
+        'deps': deps
+    }
+    return render_template('dep_journal.html', **d)
 
 
 @app.route('/register', methods=["GET", "POST"])
@@ -93,6 +62,7 @@ def reg_form():
         session = db_session.create_session()
         if session.query(User).filter(User.login == form.login.data).first():
             return render_template('reg_form.html', title='Регистрация', form=form, message='User is already exists!')
+        # noinspection PyArgumentList
         user = User(
             login=form.login.data,
             surname=form.surname.data,
@@ -118,7 +88,7 @@ def login():
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember_me.data)
             return redirect("/")
-        return render_template('login.html',
+        return render_template('login.html', title='Авторизация',
                                message="Неправильный логин или пароль",
                                form=form)
     return render_template('login.html', title='Авторизация', form=form)
@@ -130,6 +100,7 @@ def add_job():
     form = JobForm()
     if form.validate_on_submit():
         session = db_session.create_session()
+        # noinspection PyArgumentList
         job = Jobs(
             job=form.job_title.data,
             team_leader=form.team_leader.data,
@@ -141,7 +112,27 @@ def add_job():
         session.merge(current_user)
         session.commit()
         return redirect('/')
-    return render_template('job.html', title='Adding a job', form=form)
+    return render_template('job_form.html', title='Adding a job', form=form)
+
+
+@app.route('/adddep', methods=['POST', 'GET'])
+@login_required
+def add_dep():
+    form = DepForm()
+    if form.validate_on_submit():
+        session = db_session.create_session()
+        # noinspection PyArgumentList
+        dep = Department(
+            title=form.title.data,
+            chief=form.chief.data,
+            members=form.members.data,
+            email=form.email.data
+        )
+        current_user.department.append(dep)
+        session.merge(current_user)
+        session.commit()
+        return redirect('/departments')
+    return render_template('dep_form.html', title='Adding a department', form=form)
 
 
 @app.route('/logout')
@@ -179,7 +170,38 @@ def edit_jobs(id):
             return redirect('/')
         else:
             abort(404)
-    return render_template('job.html', title='Editing a job', form=form)
+    return render_template('job_form.html', title='Editing a job', form=form)
+
+
+@app.route('/deps/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit_deps(id):
+    form = DepForm()
+    if request.method == 'GET':
+        session = db_session.create_session()
+        deps = session.query(Department).filter(Department.id == id,
+                                                ((Department.user == current_user) | (current_user.id == 1))).first()
+        if deps:
+            form.title.data = deps.title
+            form.chief.data = deps.chief
+            form.members.data = deps.members
+            form.email.data = deps.email
+        else:
+            abort(404)
+    if form.validate_on_submit():
+        session = db_session.create_session()
+        deps = session.query(Department).filter(Department.id == id,
+                                                ((Department.user == current_user) | (current_user.id == 1))).first()
+        if deps:
+            deps.title = form.title.data
+            deps.chief = form.chief.data
+            deps.members = form.members.data
+            deps.email = form.email.data
+            session.commit()
+            return redirect('/departments')
+        else:
+            abort(404)
+    return render_template('dep_form.html', title='Editing a department', form=form)
 
 
 @app.route('/jobs_delete/<int:id>', methods=['POST', 'GET'])
@@ -193,6 +215,20 @@ def jobs_delete(id):
     else:
         abort(404)
     return redirect('/')
+
+
+@app.route('/deps_delete/<int:id>', methods=['POST', 'GET'])
+@login_required
+def deps_delete(id):
+    session = db_session.create_session()
+    deps = session.query(Department).filter(Department.id == id,
+                                            ((Department.user == current_user) | (Department.id == 1))).first()
+    if deps:
+        session.delete(deps)
+        session.commit()
+    else:
+        abort(404)
+    return redirect('/departments')
 
 
 if __name__ == '__main__':

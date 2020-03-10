@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block style %}
+<link rel="stylesheet" href="/static/css/style.css" type="text/css">
+{% endblock %}
+
+{% block content %}
+<form class="my-form" method="post" novalidate>
+    {{ form.hidden_tag() }}
+    {{ form.csrf_token }}
+    <h1>Adding a department</h1>
+    <div>
+        {{ form.title.label }} <br>
+        {{ form.title(class="form-control") }}<br>
+        {% for error in form.title.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
+    </div>
+    <div>
+        {{ form.chief.label }} <br>
+        {{ form.chief(class="form-control") }}<br>
+        {% for error in form.chief.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
+    </div>
+    <div>
+        {{ form.members.label }} <br>
+        {{ form.members(class="form-control") }}<br>
+        {% for error in form.members.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
+    </div>
+    <div>
+        {{ form.email.label }} <br>
+        {{ form.email(class="form-control") }}<br>
+        {% for error in form.email.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endfor %}
+    </div>
+    <div>{{ form.submit(class="btn btn-primary", type="submit") }}</div>
+    {% if message %}
+    <div class="alert alert-danger">{{ message }}</div>
+    {% endif %}
+</form>
+{% endblock %}
