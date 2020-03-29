@@ -2,6 +2,7 @@ from flask import Flask, render_template, redirect, request
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from werkzeug.exceptions import abort
 from data import db_session
+from data.categories import HazardCategory
 from data.users import User
 from data.jobs import Jobs
 from data.departments import Department
@@ -31,9 +32,6 @@ def main():
 def job_journal():
     session = db_session.create_session()
     jobs = session.query(Jobs).all()
-    users = []
-    for i in range(len(jobs)):
-        users.append(session.query(User).filter(User.id == jobs[i].team_leader).first())
     d = {
         'title': 'Works log',
         'jobs': jobs
@@ -108,6 +106,10 @@ def add_job():
             is_finished=form.is_finished.data,
             collaborators=form.collaborators.data
         )
+        for category_id in list(map(int, form.category.data.split(', '))):
+            category = session.query(HazardCategory).get(category_id)
+            session.expunge(category)
+            job.categories.append(category)
         current_user.job.append(job)
         session.merge(current_user)
         session.commit()
@@ -155,6 +157,7 @@ def edit_jobs(id):
             form.work_size.data = jobs.work_size
             form.is_finished.data = jobs.is_finished
             form.collaborators.data = jobs.collaborators
+            form.category.data = ', '.join([str(item.id) for item in jobs.categories])
         else:
             abort(404)
     if form.validate_on_submit():
@@ -166,6 +169,11 @@ def edit_jobs(id):
             jobs.work_size = form.work_size.data
             jobs.is_finished = form.is_finished.data
             jobs.collaborators = form.collaborators.data
+            jobs.categories.clear()
+            for category_id in list(map(int, form.category.data.split(', '))):
+                category = session.query(HazardCategory).get(category_id)
+                session.expunge(category)
+                jobs.categories.append(category)
             session.commit()
             return redirect('/')
         else:
